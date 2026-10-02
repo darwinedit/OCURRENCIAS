@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CONDOMINIO NEXO - Bitácora de Conserjería</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#111827">
+    <!-- Tailwind CSS desde CDN para diseño elegante y responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        nexoBlack: '#111827',
+                        nexoDark: '#1F2937',
+                        nexoBlue: '#2563EB',
+                        nexoBlueHover: '#1D4ED8',
+                        nexoLightBlue: '#EFF6FF',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .fa-solid,.fa-regular{font-style:normal;display:inline-block}
+        .fa-clock::before{content:"🕒"}
+        .fa-address-book::before{content:"📒"}
+        .fa-book::before{content:"📘"}
+        .fa-book-bookmark::before{content:"🔖"}
+        .fa-book-open::before{content:"📖"}
+        .fa-box::before{content:"📦"}
+        .fa-box-archive::before{content:"🗂️"}
+        .fa-building-circle-check::before{content:"🏢"}
+        .fa-building-shield::before{content:"🛡️"}
+        .fa-car::before{content:"🚗"}
+        .fa-check-double::before{content:"✅"}
+        .fa-circle-check::before{content:"✅"}
+        .fa-clipboard-check::before{content:"📋"}
+        .fa-concierge-bell::before{content:"🛎️"}
+        .fa-file-excel::before{content:"📊"}
+        .fa-fingerprint::before{content:"🖐️"}
+        .fa-key::before{content:"🔑"}
+        .fa-list-check::before{content:"☑️"}
+        .fa-pen::before{content:"✏️"}
+        .fa-print::before{content:"🖨️"}
+        .fa-square-parking::before{content:"🅿️"}
+        .fa-trash::before{content:"🗑️"}
+        .fa-trash-can::before{content:"🗑️"}
+        .fa-user-shield::before{content:"👮"}
+        .fa-xmark::before{content:"✕"}
+        :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+        header{top:env(safe-area-inset-top,0px) !important}
+        body { font-family: 'Inter', sans-serif; -webkit-text-size-adjust: 100%; }
+        input, select { font-size: 16px !important; }
+        .hoja-cuaderno { display:block; width:100%; height:352px; overflow-y:auto; resize:none; outline:none;
+            font-family:'Caveat','Segoe Script',cursive; font-size:22px; line-height:32px; color:#1e3a8a;
+            padding:0 10px 0 48px; border:1px solid #e5e7eb; border-radius:8px; background-color:#fffdf2; background-attachment:local;
+            background-image:linear-gradient(to right,transparent 38px,#fca5a5 38px,#fca5a5 40px,transparent 40px),repeating-linear-gradient(to bottom,transparent 0,transparent 31px,#bcd4f0 31px,#bcd4f0 32px); }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; color: black; }
+            .card { border: 1px solid #ccc; shadow: none; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-gray-800 min-h-screen flex flex-col">
+
+    <!-- HEADER / ENCABEZADO -->
+    <header class="bg-nexoBlack text-white shadow-lg border-b-4 border-nexoBlue sticky top-0 z-50">
+        <div class="max-w-md mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-nexoBlue p-2 rounded-lg text-white font-bold text-xl">
+                    <i class="fa-solid fa-building-shield"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wider text-white">CONDOMINIO NEXO</h1>
+                    <p class="text-xs text-blue-400 font-medium">Sistema Digital de Conserjería y Control de Rondas</p>
+                </div>
+            </div>
+
+            <!-- Botones de Acción Global -->
+            <div class="flex items-center space-x-2 mt-2 w-full no-print">
+                <button onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded-lg font-semibold flex flex-1 justify-center items-center gap-1 transition">
+                    <i class="fa-solid fa-file-excel"></i> Exportar Datos
+                </button>
+                <button onclick="window.print()" class="bg-nexoBlue hover:bg-nexoBlueHover text-white text-xs px-3 py-2 rounded-lg font-semibold flex flex-1 justify-center items-center gap-1 transition">
+                    <i class="fa-solid fa-print"></i> Imprimir Reporte
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- BANNER DE ASISTENCIA / TURNO -->
+    <section class="bg-nexoDark text-white py-3 px-3 shadow-inner no-print">
+        <div class="max-w-md mx-auto space-y-3">
+            <div class="flex items-center justify-between">
+                <div class="bg-gray-800 px-3 py-1.5 rounded-md border border-gray-700 flex items-center gap-2">
+                    <i class="fa-regular fa-clock text-nexoBlue"></i>
+                    <span id="relojActivo" class="font-mono text-sm font-bold text-blue-300">--:--:--</span>
+                </div>
+                <div class="text-xs text-right">
+                    <span class="text-gray-400 block">Fecha del Día:</span>
+                    <span id="fechaActual" class="font-semibold text-gray-200">--/--/----</span>
+                </div>
+            </div>
+            <div id="boxAsistencia" class="bg-gray-800 p-3 rounded-lg border border-gray-700 space-y-2">
+                <span class="text-xs font-semibold text-gray-300 block"><i class="fa-solid fa-fingerprint text-nexoBlue"></i> Asistencia:</span>
+                <select id="selectTurno" class="w-full bg-gray-900 text-white p-2 rounded border border-gray-600">
+                    <option value="Día (6:00 AM - 6:00 PM)">Turno Día (6am - 6pm)</option>
+                    <option value="Noche (6:00 PM - 6:00 AM)">Turno Noche (6pm - 6am)</option>
+                </select>
+                <input type="text" id="nombreConserje" placeholder="Tu Nombre / Apellido" class="w-full bg-gray-900 text-white p-2 rounded border border-gray-600 focus:outline-none focus:border-nexoBlue">
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="text-[10px] text-gray-400 block">Hora de ingreso (vacío = ahora)</label><input type="time" id="horaIngreso" style="color-scheme:dark" class="w-full bg-gray-900 text-white p-2 rounded border border-gray-600"></div>
+                    <div><label class="text-[10px] text-gray-400 block">Fecha (vacío = hoy)</label><input type="date" id="fechaIngreso" style="color-scheme:dark" class="w-full bg-gray-900 text-white p-2 rounded border border-gray-600"></div>
+                </div>
+                <button onclick="marcarHuella()" class="w-full bg-nexoBlue hover:bg-nexoBlueHover text-white text-sm py-2.5 rounded font-bold transition">Marcar Huella</button>
+                <p class="text-[10px] text-gray-400">¿Olvidaste marcar? Pon la hora real de tu ingreso antes de marcar.</p>
+            </div>
+            <div id="asistenciaConfirmada" class="hidden text-xs bg-emerald-900 text-emerald-200 px-3 py-2 rounded-lg border border-emerald-700 flex items-center gap-2">
+                <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                <span id="txtAsistenciaDetalle" class="flex-1">Asistencia Registrada</span>
+                <button onclick="abrirEditarAsistencia()" class="underline text-emerald-300">Editar hora</button>
+                <button onclick="resetAsistencia()" class="underline text-emerald-400">Cambiar</button>
+            </div>
+            <div id="editarAsistencia" class="hidden bg-gray-800 p-3 rounded-lg border border-nexoBlue space-y-2">
+                <span class="text-xs font-semibold text-gray-300 block">Corregir hora de ingreso</span>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="time" id="editHora" style="color-scheme:dark" class="w-full bg-gray-900 text-white p-2 rounded border border-gray-600">
+                    <input type="date" id="editFecha" style="color-scheme:dark" class="w-full bg-gray-900 text-white p-2 rounded border border-gray-600">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="guardarEdicionAsistencia()" class="bg-nexoBlue text-white text-xs py-2 rounded font-bold">Guardar</button>
+                    <button onclick="cerrarEditarAsistencia()" class="bg-gray-700 text-white text-xs py-2 rounded font-bold">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTENIDO PRINCIPAL / PESTAÑAS -->
+    <main class="max-w-md mx-auto px-3 py-4 flex-grow w-full">
+
+        <!-- Selector de Puesto / Sección -->
+        <div class="grid grid-cols-5 mb-4 bg-white rounded-xl overflow-hidden shadow-sm no-print">
+            <button onclick="cambiarPuesto('cochera')" id="btnPuestoCochera" class="tab-btn py-2 px-1 text-[10px] font-semibold text-gray-600 border-b-2 border-transparent transition flex flex-col items-center gap-1"><i class="fa-solid fa-square-parking text-base"></i>Cochera</button>
+            <button onclick="cambiarPuesto('recepcion')" id="btnPuestoRecepcion" class="tab-btn py-2 px-1 text-[10px] font-semibold text-gray-600 border-b-2 border-transparent transition flex flex-col items-center gap-1"><i class="fa-solid fa-concierge-bell text-base"></i>Recepción</button>
+            <button onclick="cambiarPuesto('ronda')" id="btnPuestoRonda" class="tab-btn py-2 px-1 text-[10px] font-semibold text-gray-600 border-b-2 border-transparent transition flex flex-col items-center gap-1"><i class="fa-solid fa-user-shield text-base"></i>Ronda</button>
+            <button onclick="cambiarPuesto('cuaderno')" id="btnPuestoCuaderno" class="tab-btn py-2 px-1 text-[10px] font-semibold text-gray-600 border-b-2 border-transparent transition flex flex-col items-center gap-1"><i class="fa-solid fa-book-open text-base"></i>Cuaderno</button>
+            <button onclick="cambiarPuesto('historial')" id="btnPuestoHistorial" class="tab-btn py-2 px-1 text-[10px] font-semibold text-gray-600 border-b-2 border-transparent transition flex flex-col items-center gap-1"><i class="fa-solid fa-box-archive text-base"></i>Historial</button>
+        </div>
+
+        <!-- SECCIÓN 1: COCHERA -->
+        <div id="seccionCochera" class="seccion-puesto space-y-6 hidden">
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Registro de Vehículos -->
+                <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-nexoBlue">
+                    <h2 class="text-base font-bold text-nexoBlack mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-car text-nexoBlue"></i> Registro Vehicular (Ingreso / Salida)
+                    </h2>
+                    <form onsubmit="registrarVehiculo(event)" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">Tipo Movimiento</label>
+                                <select id="vehTipo" class="w-full text-xs p-2 border rounded focus:border-nexoBlue">
+                                    <option value="Ingreso">INGRESÓ</option>
+                                    <option value="Salida">SALIÓ</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">Placa del Auto</label>
+                                <input type="text" id="vehPlaca" placeholder="ABC-123" required class="w-full text-xs p-2 border rounded uppercase focus:border-nexoBlue">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">N° Dpto / Propietario</label>
+                                <input type="text" id="vehDpto" placeholder="Dpto 302 / Residente" class="w-full text-xs p-2 border rounded focus:border-nexoBlue">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">Conductor / Notas</label>
+                                <input type="text" id="vehNotas" placeholder="Nombre o detalles" class="w-full text-xs p-2 border rounded focus:border-nexoBlue">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-nexoBlue hover:bg-nexoBlueHover text-white text-xs font-bold py-2 rounded transition">Guardar Vehículo</button>
+                    </form>
+                </div>
+
+                <!-- Control de Estacionamiento Visitas (10 Puestos) -->
+                <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-slate-700">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-base font-bold text-nexoBlack flex items-center gap-2">
+                            <i class="fa-solid fa-square-parking text-slate-700"></i> Puestos de Visita (Máx 10)
+                        </h2>
+                        <span id="ocupacionVisitas" class="text-xs font-bold px-2.5 py-1 bg-blue-100 text-nexoBlue rounded-full">0/10 Ocupados</span>
+                    </div>
+                    
+                    <form onsubmit="registrarVisitaCochera(event)" class="space-y-3 mb-4">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">Puesto N°</label>
+                                <select id="puestoNro" class="w-full text-xs p-2 border rounded focus:border-nexoBlue">
+                                    <option value="1">Puesto 1</option><option value="2">Puesto 2</option>
+                                    <option value="3">Puesto 3</option><option value="4">Puesto 4</option>
+                                    <option value="5">Puesto 5</option><option value="6">Puesto 6</option>
+                                    <option value="7">Puesto 7</option><option value="8">Puesto 8</option>
+                                    <option value="9">Puesto 9</option><option value="10">Puesto 10</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">Placa Visita</label>
+                                <input type="text" id="puestoPlaca" placeholder="XYZ-987" required class="w-full text-xs p-2 border rounded uppercase">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">Dpto a Visitar</label>
+                                <input type="text" id="puestoDpto" placeholder="Dpto 101" required class="w-full text-xs p-2 border rounded">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2 rounded transition">Asignar Puesto de Visita</button>
+                    </form>
+
+                    <!-- Estado actual de los 10 Puestos -->
+                    <div class="grid grid-cols-5 gap-1.5 text-center text-xs" id="gridPuestosVisita">
+                        <!-- Generado Dinámicamente por JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ocurrencias Cochera -->
+            <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-amber-500">
+                <h2 class="text-base font-bold text-nexoBlack mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-book-bookmark text-amber-500"></i> Cuaderno de Ocurrencias - Cochera
+                </h2>
+                <form onsubmit="registrarOcurrencia('Cochera', event)" class="flex gap-2">
+                    <input type="text" id="txtOcurrenciaCochera" placeholder="Escribe la ocurrencia o novedad en cochera..." required class="flex-grow text-xs p-2.5 border rounded focus:border-nexoBlue">
+                    <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded transition">Añadir Nota</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: RECEPCIÓN -->
+        <div id="seccionRecepcion" class="seccion-puesto space-y-6 hidden">
+            <!-- Relevo de Recepción -->
+            <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="text-nexoBlue text-2xl"><i class="fa-solid fa-key"></i></div>
+                    <div>
+                        <h3 class="text-sm font-bold text-nexoBlack">Conformidad de Relevo (Llaves, Pedidos y Enseres)</h3>
+                        <p class="text-xs text-gray-600">Verifica que todo se encuentre conforme antes de asumir la Recepción.</p>
+                    </div>
+                </div>
+                <button onclick="confirmarRelevo()" id="btnConfirmarRelevo" class="bg-nexoBlue text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-nexoBlueHover transition">
+                    <i class="fa-solid fa-check-double"></i> Confirmar Relevo Conforme
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Registro de Envíos / Pedidos / Delivery -->
+                <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-nexoBlue">
+                    <h2 class="text-base font-bold text-nexoBlack mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-box text-nexoBlue"></i> Control de Envíos y Paquetes
+                    </h2>
+                    <form onsubmit="registrarPedido(event)" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">Dpto / Destinatario</label>
+                                <input type="text" id="pedDpto" placeholder="Dpto 501 - Juan Pérez" required class="w-full text-xs p-2 border rounded focus:border-nexoBlue">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">Empresa / Courier</label>
+                                <input type="text" id="pedEmpresa" placeholder="MercadoLibre, PedidosYa, etc." class="w-full text-xs p-2 border rounded focus:border-nexoBlue">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-600 font-semibold">Descripción del Paquete</label>
+                            <input type="text" id="pedDetalle" placeholder="Caja mediana, sobre, bolsa, etc." class="w-full text-xs p-2 border rounded focus:border-nexoBlue">
+                        </div>
+                        <button type="submit" class="w-full bg-nexoBlue hover:bg-nexoBlueHover text-white text-xs font-bold py-2 rounded transition">Registrar Recepción de Pedido</button>
+                    </form>
+                </div>
+
+                <!-- Visitas peatonal & Proveedores -->
+                <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-indigo-600">
+                    <h2 class="text-base font-bold text-nexoBlack mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-address-book text-indigo-600"></i> Visitas Peatonales y Proveedores
+                    </h2>
+                    <form onsubmit="registrarVisitaRecepcion(event)" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">Tipo</label>
+                                <select id="visTipo" class="w-full text-xs p-2 border rounded focus:border-nexoBlue">
+                                    <option value="Visita">Visita Peatonal</option>
+                                    <option value="Proveedor">Proveedor / Técnico</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">DNI / Identificación</label>
+                                <input type="text" id="visDni" placeholder="12345678" class="w-full text-xs p-2 border rounded">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">Nombre del Visitante</label>
+                                <input type="text" id="visNombre" placeholder="Nombre completo" required class="w-full text-xs p-2 border rounded">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 font-semibold">Dpto / Destino</label>
+                                <input type="text" id="visDpto" placeholder="Torre A - 301" required class="w-full text-xs p-2 border rounded">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded transition">Registrar Ingreso Peatonal</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Ocurrencias Recepción -->
+            <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-amber-500">
+                <h2 class="text-base font-bold text-nexoBlack mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-book-bookmark text-amber-500"></i> Cuaderno de Ocurrencias - Recepción
+                </h2>
+                <form onsubmit="registrarOcurrencia('Recepción', event)" class="flex gap-2">
+                    <input type="text" id="txtOcurrenciaRecepcion" placeholder="Escribe la ocurrencia en recepción..." required class="flex-grow text-xs p-2.5 border rounded focus:border-nexoBlue">
+                    <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded transition">Añadir Nota</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: RONDA -->
+        <div id="seccionRonda" class="seccion-puesto space-y-6 hidden">
+            <!-- Checklist de Inspección por Torres A, B, C, D -->
+            <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-nexoBlue">
+                <h2 class="text-base font-bold text-nexoBlack mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-building-circle-check text-nexoBlue"></i> Inspección Obligatoria por Torres
+                </h2>
+                <p class="text-xs text-gray-500 mb-4">Marca cada piso verificado durante tu ronda de supervisión.</p>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- TORRE A -->
+                    <div class="border rounded-lg p-3 bg-gray-50">
+                        <div class="font-bold text-xs text-nexoDark border-b pb-1 mb-2 flex justify-between">
+                            <span>Torre A (5 Pisos)</span>
+                            <span class="text-blue-600 text-[10px]">Pisos 1-5</span>
+                        </div>
+                        <div class="space-y-1.5 text-xs">
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="A" value="Piso 1"> Piso 1 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="A" value="Piso 2"> Piso 2 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="A" value="Piso 3"> Piso 3 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="A" value="Piso 4"> Piso 4 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="A" value="Piso 5"> Piso 5 Conforme</label>
+                        </div>
+                    </div>
+
+                    <!-- TORRE B -->
+                    <div class="border rounded-lg p-3 bg-gray-50">
+                        <div class="font-bold text-xs text-nexoDark border-b pb-1 mb-2 flex justify-between">
+                            <span>Torre B (7 Pisos)</span>
+                            <span class="text-blue-600 text-[10px]">Pisos 1-7</span>
+                        </div>
+                        <div class="space-y-1.5 text-xs">
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="B" value="Piso 1"> Piso 1 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="B" value="Piso 2"> Piso 2 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="B" value="Piso 3"> Piso 3 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="B" value="Piso 4"> Piso 4 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="B" value="Piso 5"> Piso 5 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="B" value="Piso 6"> Piso 6 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="B" value="Piso 7"> Piso 7 Conforme</label>
+                        </div>
+                    </div>
+
+                    <!-- TORRE C -->
+                    <div class="border rounded-lg p-3 bg-gray-50">
+                        <div class="font-bold text-xs text-nexoDark border-b pb-1 mb-2 flex justify-between">
+                            <span>Torre C (6 Pisos)</span>
+                            <span class="text-blue-600 text-[10px]">Pisos 1-6</span>
+                        </div>
+                        <div class="space-y-1.5 text-xs">
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="C" value="Piso 1"> Piso 1 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="C" value="Piso 2"> Piso 2 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="C" value="Piso 3"> Piso 3 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="C" value="Piso 4"> Piso 4 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="C" value="Piso 5"> Piso 5 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="C" value="Piso 6"> Piso 6 Conforme</label>
+                        </div>
+                    </div>
+
+                    <!-- TORRE D -->
+                    <div class="border rounded-lg p-3 bg-gray-50">
+                        <div class="font-bold text-xs text-nexoDark border-b pb-1 mb-2 flex justify-between">
+                            <span>Torre D (6 Pisos)</span>
+                            <span class="text-blue-600 text-[10px]">Pisos 1-6</span>
+                        </div>
+                        <div class="space-y-1.5 text-xs">
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="D" value="Piso 1"> Piso 1 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="D" value="Piso 2"> Piso 2 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="D" value="Piso 3"> Piso 3 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="D" value="Piso 4"> Piso 4 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="D" value="Piso 5"> Piso 5 Conforme</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" onchange="guardarEstadoTorre()" class="chk-torre rounded" data-torre="D" value="Piso 6"> Piso 6 Conforme</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inspección de Áreas Comunes -->
+            <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-emerald-600">
+                <h2 class="text-base font-bold text-nexoBlack mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-check text-emerald-600"></i> Verificación de Áreas Comunes
+                </h2>
+                <div class="grid grid-cols-1 gap-2 text-xs">
+                    <label class="p-3 bg-gray-50 border rounded-lg flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="chkVisitasRonda" onchange="guardarEstadoTorre()" class="rounded">
+                        <span class="font-medium text-gray-700">Puestos de Visitas Inspeccionados</span>
+                    </label>
+                    <label class="p-3 bg-gray-50 border rounded-lg flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="chkDuctosBasura" onchange="guardarEstadoTorre()" class="rounded">
+                        <span class="font-medium text-gray-700">Ductos de Basura Limpios / Conformes</span>
+                    </label>
+                    <label class="p-3 bg-gray-50 border rounded-lg flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="chkJardines" onchange="guardarEstadoTorre()" class="rounded">
+                        <span class="font-medium text-gray-700">Jardines y Pasadizos Verificados</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Ocurrencias Ronda -->
+            <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-amber-500">
+                <h2 class="text-base font-bold text-nexoBlack mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-book-bookmark text-amber-500"></i> Cuaderno de Ocurrencias - Ronda
+                </h2>
+                <form onsubmit="registrarOcurrencia('Ronda', event)" class="flex gap-2">
+                    <input type="text" id="txtOcurrenciaRonda" placeholder="Detalla cualquier anomalía observada durante la ronda..." required class="flex-grow text-xs p-2.5 border rounded focus:border-nexoBlue">
+                    <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded transition">Añadir Nota</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SECCIÓN CUADERNO -->
+        <div id="seccionCuaderno" class="seccion-puesto space-y-4 hidden">
+            <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-amber-500">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-base font-bold text-nexoBlack flex items-center gap-2"><i class="fa-solid fa-book-open text-amber-500"></i> Mi Cuaderno</h2>
+                    <button onclick="nuevoInforme()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-2 rounded">+ Nuevo informe</button>
+                </div>
+                <p id="infVacio" class="text-xs text-gray-400 italic">Toca "+ Nuevo informe" y escribe. Todo se guarda solo mientras escribes.</p>
+                <div id="editorInforme" class="hidden">
+                    <input type="text" id="infTitulo" placeholder="Título del informe" oninput="editarInforme()" class="w-full p-2 border rounded font-semibold mb-2">
+                    <textarea id="infTexto" class="hoja-cuaderno" placeholder="Escribe aquí tu informe..." oninput="editarInforme()"></textarea>
+                    <div class="flex justify-between items-center mt-2 text-[11px]">
+                        <span id="estadoGuardado"></span>
+                        <span id="infMeta" class="text-gray-500"></span>
+                        <button onclick="eliminarInforme()" class="text-red-500"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
+                <div class="p-3 bg-amber-50 border-b border-amber-200"><h3 class="font-bold text-sm text-amber-900"><i class="fa-solid fa-book text-amber-600"></i> Informes guardados <span id="contInformes"></span></h3></div>
+                <div id="listaInformes" class="divide-y divide-gray-200"></div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 4: HISTORIAL Y REGISTRO COMPLETO (SISTEMA AUTOGUARDADO) -->
+        <div id="seccionHistorial" class="seccion-puesto space-y-6">
+            
+            <!-- Encabezado de Reporte -->
+            <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center border-l-4 border-nexoBlue">
+                <div>
+                    <h2 class="text-lg font-bold text-nexoBlack">Bitácora Diaria de Registros y Ocurrencias</h2>
+                    <p class="text-xs text-gray-500">Los datos se guardan de forma automatizada en el dispositivo.</p>
+                </div>
+                <button onclick="borrarHistorialHoy()" class="no-print text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded font-medium border border-red-200 transition">
+                    <i class="fa-solid fa-trash-can"></i> Limpiar Todo
+                </button>
+            </div>
+
+            <!-- TABLA DE MOVIMIENTOS -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
+                <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
+                    <h3 class="font-bold text-sm text-nexoDark"><i class="fa-solid fa-list-check text-nexoBlue"></i> Registros de Entrada / Salida / Entregas</h3>
+                </div>
+                <div id="tablaRegistros" class="divide-y divide-gray-200"></div>
+            </div>
+
+            <!-- CUADERNO DE OCURRECIAS CONSOLIDADO -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
+                <div class="p-4 bg-amber-50 border-b border-amber-200 flex justify-between items-center">
+                    <h3 class="font-bold text-sm text-amber-900"><i class="fa-solid fa-book text-amber-600"></i> Cuaderno Único de Ocurrencias (Novedades)</h3>
+                </div>
+                <div class="p-4 space-y-2" id="listaOcurrencias">
+                    <!-- JS carga las ocurrencias aquí -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-nexoBlack text-gray-400 text-xs py-4 text-center mt-auto border-t border-gray-800">
+        <p>CONDOMINIO NEXO &copy; 2026 - Control Interno de Conserjería & Seguridad</p>
+    </footer>
+
+    <!-- LOGICA JAVASCRIPT CON AUTOGUARDADO EN LOCALSTORAGE -->
+    <script>
+        // ESTADO GLOBAL CON AUTOGUARDADO
+        let appData = {
+            asistencia: null,
+            puestosVisita: {}, // max 10
+            registros: [],
+            ocurrencias: [],
+            checklistRonda: {}
+        };
+
+        // INICIALIZACIÓN
+        window.addEventListener('DOMContentLoaded', () => {
+            cargarDatosGuardados();
+            iniciarReloj();
+            actualizarGridVisitas();
+            renderizarRegistros();
+            renderizarOcurrencias();
+            renderizarInformes();
+            if (appData.informes.length) abrirInforme(appData.informes[0].id);
+            cambiarPuesto('cochera');
+        });
+
+        // RELOJ Y FECHA
+        function iniciarReloj() {
+            const actualizar = () => {
+                const ahora = new Date();
+                document.getElementById('relojActivo').innerText = ahora.toLocaleTimeString();
+                document.getElementById('fechaActual').innerText = ahora.toLocaleDateString();
+            };
+            actualizar();
+            setInterval(actualizar, 1000);
+        }
+
+        // GUARDAR DATOS EN LOCALSTORAGE DE FORMA AUTOMÁTICA
+        function autoGuardar() {
+            try { localStorage.setItem('nexo_conserjeria_db', JSON.stringify(appData)); return true; } catch (e) { return false; }
+        }
+
+        // CARGAR DATOS DESDE LOCALSTORAGE
+        function cargarDatosGuardados() {
+            const datosGuardados = localStorage.getItem('nexo_conserjeria_db');
+            if (datosGuardados) {
+                appData = JSON.parse(datosGuardados);
+            }
+
+            appData.informes = appData.informes || [];
+            // Restaurar Asistencia si existe
+            if (appData.asistencia) {
+                mostrarAsistenciaConfirmada();
+            }
+
+            // Restaurar Checkboxes de Ronda
+            if (appData.checklistRonda) {
+                document.querySelectorAll('.chk-torre').forEach(chk => {
+                    const key = chk.dataset.torre + '_' + chk.value;
+                    if (appData.checklistRonda[key]) chk.checked = true;
+                });
+                document.getElementById('chkVisitasRonda').checked = !!appData.checklistRonda['visitas'];
+                document.getElementById('chkDuctosBasura').checked = !!appData.checklistRonda['ductos'];
+                document.getElementById('chkJardines').checked = !!appData.checklistRonda['jardines'];
+            }
+        }
+
+        // HELPERS DE FECHA/HORA (24h)
+        const pad2 = n => String(n).padStart(2, '0');
+        function hoyISO() { const d = new Date(); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+        function horaAhora() { const d = new Date(); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; }
+        function fmtFecha(iso) { return /^\d{4}-\d{2}-\d{2}$/.test(iso || '') ? iso.split('-').reverse().join('/') : (iso || ''); }
+
+        // CAMBIAR PUESTO (Navegación)
+        function cambiarPuesto(puesto) {
+            const nombres = { cochera: 'Cochera', recepcion: 'Recepcion', ronda: 'Ronda', cuaderno: 'Cuaderno', historial: 'Historial' };
+            const n = nombres[puesto] || 'Cochera';
+            document.querySelectorAll('.seccion-puesto').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-nexoBlue', 'text-nexoBlue', 'bg-blue-50');
+                btn.classList.add('border-transparent', 'text-gray-600');
+            });
+            document.getElementById('seccion' + n).classList.remove('hidden');
+            const b = document.getElementById('btnPuesto' + n);
+            b.classList.remove('border-transparent', 'text-gray-600');
+            b.classList.add('border-nexoBlue', 'text-nexoBlue', 'bg-blue-50');
+        }
+
+        // CONTROL DE ASISTENCIA Y HUELLA
+        function marcarHuella() {
+            const nombre = document.getElementById('nombreConserje').value.trim();
+            const turno = document.getElementById('selectTurno').value;
+            if (!nombre) { alert('Por favor ingresa tu nombre antes de registrar asistencia.'); return; }
+            const hora = document.getElementById('horaIngreso').value || horaAhora();
+            const fecha = document.getElementById('fechaIngreso').value || hoyISO();
+            appData.asistencia = { conserje: nombre, turno: turno, hora: hora, fecha: fecha };
+            agregarRegistro('Asistencia', 'Huella Confirmada', `Ingreso de Conserje: ${nombre} (${turno})`, 'N/A', hora);
+            appData.asistencia.regId = appData.registros[0].id;
+            autoGuardar();
+            document.getElementById('horaIngreso').value = '';
+            document.getElementById('fechaIngreso').value = '';
+            mostrarAsistenciaConfirmada();
+        }
+
+        function mostrarAsistenciaConfirmada() {
+            const a = appData.asistencia;
+            document.getElementById('boxAsistencia').classList.add('hidden');
+            document.getElementById('editarAsistencia').classList.add('hidden');
+            document.getElementById('asistenciaConfirmada').classList.remove('hidden');
+            document.getElementById('txtAsistenciaDetalle').innerText = `${a.conserje} | ${a.turno} (${fmtFecha(a.fecha)} ${a.hora})`;
+        }
+
+        function abrirEditarAsistencia() {
+            const a = appData.asistencia;
+            document.getElementById('editHora').value = /^\d{2}:\d{2}$/.test(a.hora) ? a.hora : '';
+            document.getElementById('editFecha').value = /^\d{4}-\d{2}-\d{2}$/.test(a.fecha || '') ? a.fecha : hoyISO();
+            document.getElementById('asistenciaConfirmada').classList.add('hidden');
+            document.getElementById('editarAsistencia').classList.remove('hidden');
+        }
+
+        function cerrarEditarAsistencia() { mostrarAsistenciaConfirmada(); }
+
+        function guardarEdicionAsistencia() {
+            const h = document.getElementById('editHora').value;
+            if (!h) { alert('Elige la hora de ingreso.'); return; }
+            const a = appData.asistencia;
+            a.hora = h;
+            a.fecha = document.getElementById('editFecha').value || hoyISO();
+            const r = appData.registros.find(x => x.id === a.regId);
+            if (r) r.hora = h;
+            autoGuardar();
+            mostrarAsistenciaConfirmada();
+            renderizarRegistros();
+        }
+
+        function resetAsistencia() {
+            if (confirm('¿Deseas cambiar el conserje activo de este turno?')) {
+                appData.asistencia = null;
+                autoGuardar();
+                document.getElementById('boxAsistencia').classList.remove('hidden');
+                document.getElementById('asistenciaConfirmada').classList.add('hidden');
+            }
+        }
+
+        // CORREGIR HORA DE CUALQUIER REGISTRO
+        function editarHoraRegistro(id) {
+            const r = appData.registros.find(x => x.id === id);
+            if (!r) return;
+            const v = prompt('Nueva hora (formato 24h HH:MM)', /^\d{2}:\d{2}$/.test(r.hora) ? r.hora : horaAhora());
+            if (v === null) return;
+            const m = v.trim().match(/^([01]?\d|2[0-3]):([0-5]\d)$/);
+            if (!m) { alert('Hora no válida. Ejemplo: 07:30'); return; }
+            r.hora = pad2(+m[1]) + ':' + m[2];
+            if (appData.asistencia && appData.asistencia.regId === id) { appData.asistencia.hora = r.hora; mostrarAsistenciaConfirmada(); }
+            autoGuardar();
+            renderizarRegistros();
+        }
+
+        // REGISTRAR VEHÍCULOS (COCHERA)
+        function registrarVehiculo(e) {
+            e.preventDefault();
+            const tipo = document.getElementById('vehTipo').value;
+            const placa = document.getElementById('vehPlaca').value.trim().toUpperCase();
+            const dpto = document.getElementById('vehDpto').value.trim();
+            const notas = document.getElementById('vehNotas').value.trim();
+
+            agregarRegistro('Cochera', `Vehículo (${tipo})`, `Placa: ${placa} ${notas ? '- ' + notas : ''}`, dpto || 'N/A');
+            
+            document.getElementById('vehPlaca').value = '';
+            document.getElementById('vehNotas').value = '';
+            alert('Vehículo registrado correctamente.');
+        }
+
+        // REGISTRAR PUESTO VISITA COCHERA (MAX 10)
+        function registrarVisitaCochera(e) {
+            e.preventDefault();
+            const nro = document.getElementById('puestoNro').value;
+            const placa = document.getElementById('puestoPlaca').value.trim().toUpperCase();
+            const dpto = document.getElementById('puestoDpto').value.trim();
+
+            appData.puestosVisita[nro] = { placa, dpto, hora: horaAhora() };
+            
+            agregarRegistro('Cochera', 'Puesto Visita Ocupado', `Puesto ${nro} asignado a Placa: ${placa}`, dpto);
+            
+            autoGuardar();
+            actualizarGridVisitas();
+            document.getElementById('puestoPlaca').value = '';
+            document.getElementById('puestoDpto').value = '';
+        }
+
+        function liberarpuestoVisita(nro) {
+            if (confirm(`¿Liberar el Puesto de Visita N° ${nro}?`)) {
+                const info = appData.puestosVisita[nro];
+                delete appData.puestosVisita[nro];
+                agregarRegistro('Cochera', 'Puesto Visita Liberado', `Puesto ${nro} liberado (Estaba: ${info ? info.placa : ''})`, info ? info.dpto : 'N/A');
+                autoGuardar();
+                actualizarGridVisitas();
+            }
+        }
+
+        function actualizarGridVisitas() {
+            const container = document.getElementById('gridPuestosVisita');
+            container.innerHTML = '';
+            let ocupados = 0;
+
+            for (let i = 1; i <= 10; i++) {
+                const info = appData.puestosVisita[i];
+                if (info) ocupados++;
+
+                const div = document.createElement('div');
+                div.className = `p-2 rounded border flex flex-col justify-between items-center ${info ? 'bg-red-50 border-red-300 text-red-800' : 'bg-emerald-50 border-emerald-300 text-emerald-800'}`;
+                div.innerHTML = `
+                    <span class="font-bold text-[11px]">P-${i}</span>
+                    <span class="text-[10px] uppercase font-mono my-1">${info ? info.placa : 'LIBRE'}</span>
+                    ${info ? `<button onclick="liberarpuestoVisita(${i})" class="text-[9px] bg-red-600 text-white px-1 py-0.5 rounded">Liberar</button>` : '<span class="text-[9px] text-emerald-600 font-semibold">Disponible</span>'}
+                `;
+                container.appendChild(div);
+            }
+
+            document.getElementById('ocupacionVisitas').innerText = `${ocupados}/10 Ocupados`;
+        }
+
+        // CONFIRMAR RELEVO RECEPCIÓN
+        function confirmarRelevo() {
+            agregarRegistro('Recepción', 'Relevo de Turno', 'Relevo verificado CONFORME (Llaves, Enseres y Pedidos completados)', 'Recepción');
+            document.getElementById('btnConfirmarRelevo').classList.replace('bg-nexoBlue', 'bg-emerald-600');
+            document.getElementById('btnConfirmarRelevo').innerHTML = '<i class="fa-solid fa-circle-check"></i> Relevo Conforme Confirmado';
+            alert('Se ha registrado la conformidad de relevo.');
+        }
+
+        // REGISTRAR PEDIDOS RECEPCIÓN
+        function registrarPedido(e) {
+            e.preventDefault();
+            const dpto = document.getElementById('pedDpto').value.trim();
+            const empresa = document.getElementById('pedEmpresa').value.trim();
+            const detalle = document.getElementById('pedDetalle').value.trim();
+
+            agregarRegistro('Recepción', 'Pedido / Delivery', `Courier: ${empresa || 'S/E'} - ${detalle}`, dpto);
+            document.getElementById('pedDpto').value = '';
+            document.getElementById('pedEmpresa').value = '';
+            document.getElementById('pedDetalle').value = '';
+            alert('Pedido registrado en recepción.');
+        }
+
+        // REGISTRAR VISITAS Y PROVEEDORES EN RECEPCIÓN
+        function registrarVisitaRecepcion(e) {
+            e.preventDefault();
+            const tipo = document.getElementById('visTipo').value;
+            const dni = document.getElementById('visDni').value.trim();
+            const nombre = document.getElementById('visNombre').value.trim();
+            const dpto = document.getElementById('visDpto').value.trim();
+
+            agregarRegistro('Recepción', tipo, `${nombre} ${dni ? '(DNI: ' + dni + ')' : ''}`, dpto);
+            document.getElementById('visDni').value = '';
+            document.getElementById('visNombre').value = '';
+            document.getElementById('visDpto').value = '';
+            alert('Ingreso de visita/proveedor registrado.');
+        }
+
+        // GUARDAR ESTADO DE CHECKLIST RONDA
+        function guardarEstadoTorre() {
+            const checklist = {};
+            document.querySelectorAll('.chk-torre').forEach(chk => {
+                const key = chk.dataset.torre + '_' + chk.value;
+                checklist[key] = chk.checked;
+            });
+            checklist['visitas'] = document.getElementById('chkVisitasRonda').checked;
+            checklist['ductos'] = document.getElementById('chkDuctosBasura').checked;
+            checklist['jardines'] = document.getElementById('chkJardines').checked;
+
+            appData.checklistRonda = checklist;
+            autoGuardar();
+        }
+
+        // REGISTRAR OCURRENCIAS GENERALES
+        function registrarOcurrencia(area, e) {
+            e.preventDefault();
+            let inputId = area === 'Cochera' ? 'txtOcurrenciaCochera' : (area === 'Recepción' ? 'txtOcurrenciaRecepcion' : 'txtOcurrenciaRonda');
+            const nota = document.getElementById(inputId).value.trim();
+
+            const ocurrenciaObj = {
+                id: Date.now(),
+                hora: horaAhora(),
+                area: area,
+                conserje: appData.asistencia ? appData.asistencia.conserje : 'Conserje en Turno',
+                texto: nota
+            };
+
+            appData.ocurrencias.unshift(ocurrenciaObj);
+            autoGuardar();
+            renderizarOcurrencias();
+            document.getElementById(inputId).value = '';
+            alert('Ocurrencia guardada en la bitácora.');
+        }
+
+        // FUNCIÓN AUXILIAR PARA AGREGAR REGISTROS AL HISTORIAL
+        function agregarRegistro(area, evento, detalles, dpto, horaManual) {
+            const reg = {
+                id: Date.now(),
+                hora: horaAhora(),
+                area: area,
+                evento: evento,
+                detalles: detalles,
+                dpto: dpto,
+                conserje: appData.asistencia ? appData.asistencia.conserje : 'Sin Marcar'
+            };
+
+            if (horaManual) reg.hora = horaManual;
+            appData.registros.unshift(reg);
+            autoGuardar();
+            renderizarRegistros();
+        }
+
+        // RENDERIZAR REGISTROS (tarjetas)
+        function renderizarRegistros() {
+            const cont = document.getElementById('tablaRegistros');
+            cont.innerHTML = '';
+            if (appData.registros.length === 0) {
+                cont.innerHTML = `<p class="p-4 text-center text-xs text-gray-400">No hay registros realizados en el día.</p>`;
+                return;
+            }
+            appData.registros.forEach(r => {
+                const color = r.area === 'Cochera' ? 'bg-blue-100 text-blue-800' : (r.area === 'Recepción' ? 'bg-purple-100 text-purple-800' : 'bg-emerald-100 text-emerald-800');
+                const d = document.createElement('div');
+                d.className = 'p-3 flex gap-3 items-start text-xs';
+                d.innerHTML = `
+                    <button onclick="editarHoraRegistro(${r.id})" class="font-mono font-bold text-gray-700 text-left" title="Toca para corregir la hora">${r.hora}<i class="fa-solid fa-pen text-[9px] text-gray-400 ml-1 no-print"></i></button>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap items-center gap-1.5 mb-0.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${color}">${r.area}</span><span class="font-semibold text-gray-800">${r.evento}</span></div>
+                        <p class="text-gray-700 break-words">${r.detalles}</p>
+                        <p class="text-gray-500 mt-0.5">${r.dpto && r.dpto !== 'N/A' ? 'Dpto: <b class="text-gray-900">' + r.dpto + '</b> · ' : ''}${r.conserje}</p>
+                    </div>
+                    <button onclick="eliminarRegistro(${r.id})" class="no-print text-red-500 hover:text-red-700 p-1"><i class="fa-solid fa-xmark"></i></button>`;
+                cont.appendChild(d);
+            });
+        }
+
+        // RENDERIZAR OCURRENCIAS
+        function renderizarOcurrencias() {
+            const container = document.getElementById('listaOcurrencias');
+            container.innerHTML = '';
+
+            if (appData.ocurrencias.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 italic">No hay ocurrencias anotadas en el cuaderno de novedades.</p>`;
+                return;
+            }
+
+            appData.ocurrencias.forEach(o => {
+                const div = document.createElement('div');
+                div.className = "p-3 bg-white border border-amber-200 rounded-lg shadow-sm flex justify-between items-start";
+                div.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs font-bold text-amber-900">${o.hora}</span>
+                            <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-semibold">${o.area}</span>
+                            <span class="text-xs text-gray-500">| Conserje: ${o.conserje}</span>
+                        </div>
+                        <p class="text-xs text-gray-800 font-medium">${o.texto}</p>
+                    </div>
+                    <button onclick="eliminarOcurrencia(${o.id})" class="no-print text-xs text-gray-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // ELIMINAR ELEMENTOS
+        function eliminarRegistro(id) {
+            appData.registros = appData.registros.filter(r => r.id !== id);
+            autoGuardar();
+            renderizarRegistros();
+        }
+
+        function eliminarOcurrencia(id) {
+            appData.ocurrencias = appData.ocurrencias.filter(o => o.id !== id);
+            autoGuardar();
+            renderizarOcurrencias();
+        }
+
+        function borrarHistorialHoy() {
+            if (confirm('¿Estás seguro de reiniciar la bitácora de hoy? Se borrarán los registros locales.')) {
+                appData.registros = [];
+                appData.ocurrencias = [];
+                appData.puestosVisita = {};
+                autoGuardar();
+                actualizarGridVisitas();
+                renderizarRegistros();
+                renderizarOcurrencias();
+            }
+        }
+
+        // ===== CUADERNO DE INFORMES (autoguardado) =====
+        let informeActualId = null;
+        function getInforme(id) { return appData.informes.find(i => i.id === id); }
+        function limpiarInformesVacios(excepto) {
+            const n = appData.informes.length;
+            appData.informes = appData.informes.filter(i => i.id === excepto || i.titulo.trim() || i.texto.trim());
+            if (appData.informes.length !== n) autoGuardar();
+        }
+        function nuevoInforme() {
+            limpiarInformesVacios();
+            const inf = { id: Date.now(), fecha: hoyISO(), hora: horaAhora(), titulo: '', texto: '', editado: Date.now() };
+            appData.informes.unshift(inf);
+            autoGuardar();
+            abrirInforme(inf.id);
+            document.getElementById('infTexto').focus();
+        }
+        function abrirInforme(id) {
+            limpiarInformesVacios(id);
+            const inf = getInforme(id);
+            if (!inf) return;
+            informeActualId = id;
+            document.getElementById('editorInforme').classList.remove('hidden');
+            document.getElementById('infVacio').classList.add('hidden');
+            document.getElementById('infTitulo').value = inf.titulo;
+            document.getElementById('infTexto').value = inf.texto;
+            document.getElementById('infMeta').innerText = `${fmtFecha(inf.fecha)} · ${inf.hora}`;
+            document.getElementById('estadoGuardado').innerText = '';
+            renderizarInformes();
+        }
+        function editarInforme() {
+            const inf = getInforme(informeActualId);
+            if (!inf) return;
+            inf.titulo = document.getElementById('infTitulo').value;
+            inf.texto = document.getElementById('infTexto').value;
+            inf.editado = Date.now();
+            const ok = autoGuardar();
+            const e = document.getElementById('estadoGuardado');
+            e.className = ok ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold';
+            e.innerText = ok ? `✓ Guardado ${horaAhora()}` : '⚠ No se pudo guardar';
+            renderizarInformes();
+        }
+        function eliminarInforme() {
+            if (!confirm('¿Eliminar este informe?')) return;
+            appData.informes = appData.informes.filter(i => i.id !== informeActualId);
+            informeActualId = null;
+            autoGuardar();
+            document.getElementById('editorInforme').classList.add('hidden');
+            document.getElementById('infVacio').classList.remove('hidden');
+            renderizarInformes();
+        }
+        function renderizarInformes() {
+            const cont = document.getElementById('listaInformes');
+            document.getElementById('contInformes').innerText = `(${appData.informes.length})`;
+            cont.innerHTML = '';
+            if (!appData.informes.length) { cont.innerHTML = '<p class="p-4 text-xs text-gray-400 italic">Aún no hay informes guardados.</p>'; return; }
+            appData.informes.forEach(i => {
+                const b = document.createElement('button');
+                b.className = 'w-full text-left p-3 ' + (i.id === informeActualId ? 'bg-amber-50' : 'hover:bg-slate-50');
+                b.innerHTML = '<div class="text-[10px] text-gray-500"></div><div class="text-xs font-bold text-gray-800 truncate"></div><div class="text-xs text-gray-500 truncate"></div>';
+                b.children[0].textContent = `${fmtFecha(i.fecha)} · ${i.hora}`;
+                b.children[1].textContent = i.titulo.trim() || 'Sin título';
+                b.children[2].textContent = i.texto.replace(/\s+/g, ' ').slice(0, 80);
+                b.onclick = () => { abrirInforme(i.id); document.getElementById('editorInforme').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+                cont.appendChild(b);
+            });
+        }
+
+        // EXPORTAR REPORTE A EXCEL (CSV)
+        function csvCelda(v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }
+        function exportarExcel() {
+            if (!appData.registros.length && !appData.ocurrencias.length && !appData.informes.length) {
+                alert('No hay registros para exportar hoy.');
+                return;
+            }
+            const L = ['CONDOMINIO NEXO - REPORTE DE CONSERJERIA', `Fecha: ${document.getElementById('fechaActual').innerText}`, '', 'REGISTROS DIARIOS', 'Hora,Puesto/Area,Evento,Detalles,Dpto/Destino,Conserje'];
+            appData.registros.forEach(r => L.push([r.hora, r.area, r.evento, r.detalles, r.dpto, r.conserje].map(csvCelda).join(',')));
+            L.push('', 'CUADERNO DE OCURRENCIAS', 'Hora,Area,Conserje,Ocurrencia/Nota');
+            appData.ocurrencias.forEach(o => L.push([o.hora, o.area, o.conserje, o.texto].map(csvCelda).join(',')));
+            L.push('', 'INFORMES DEL CUADERNO', 'Fecha,Hora,Titulo,Texto');
+            appData.informes.forEach(i => L.push([fmtFecha(i.fecha), i.hora, i.titulo, i.texto].map(csvCelda).join(',')));
+            const blob = new Blob(['\uFEFF' + L.join('\n')], { type: 'text/csv;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Reporte_Condominio_Nexo_${hoyISO()}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+        }
+    </script>
+</body>
+</html>
