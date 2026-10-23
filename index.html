@@ -838,9 +838,23 @@
             renderizarRegistros();
         }
 
+        // ORDEN CRONOLÓGICO (más reciente arriba). Soporta turnos que cruzan la medianoche.
+        function claveOrden(r) {
+            const m = /^(\d{1,2}):(\d{2})$/.exec(r.hora || '');
+            if (!m) return r.id;
+            const c = new Date(r.id);
+            let t = new Date(c.getFullYear(), c.getMonth(), c.getDate(), +m[1], +m[2]).getTime();
+            if (t - r.id > 12 * 3600 * 1000) t -= 24 * 3600 * 1000; // hora de "ayer" corregida de madrugada
+            return t;
+        }
+        function ordenarRegistros() {
+            appData.registros.sort((a, b) => (claveOrden(b) - claveOrden(a)) || (b.id - a.id));
+        }
+
         // RENDERIZAR REGISTROS (tarjetas)
         function renderizarRegistros() {
             const cont = document.getElementById('tablaRegistros');
+            ordenarRegistros();
             cont.innerHTML = '';
             if (appData.registros.length === 0) {
                 cont.innerHTML = `<p class="p-4 text-center text-xs text-gray-400">No hay registros realizados en el día.</p>`;
