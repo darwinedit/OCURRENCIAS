@@ -301,7 +301,8 @@
                             </div>
                             <div>
                                 <label class="text-xs text-gray-600 font-semibold">DNI / Identificación</label>
-                                <input type="text" id="visDni" placeholder="12345678" class="w-full text-xs p-2 border rounded">
+                                <input type="text" id="visDni" inputmode="numeric" maxlength="8" oninput="buscarDni()" placeholder="12345678" class="w-full text-xs p-2 border rounded">
+                                <p id="dniEstado" class="text-[10px] text-gray-500 mt-0.5 min-h-[14px]"></p>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
@@ -745,6 +746,27 @@
             alert('Pedido registrado en recepción.');
         }
 
+        // ===== MEMORIA LOCAL DE VISITANTES (DNI -> Nombre) =====
+        let dniCache = {};
+        try { dniCache = JSON.parse(localStorage.getItem('nexo_dniCache') || '{}'); } catch (e) { dniCache = {}; }
+        function guardarDniCache() {
+            try { localStorage.setItem('nexo_dniCache', JSON.stringify(dniCache)); } catch (e) {}
+        }
+        function buscarDni() {
+            const dni = document.getElementById('visDni').value.trim();
+            const est = document.getElementById('dniEstado');
+            const nom = document.getElementById('visNombre');
+            if (!/^\d{8}$/.test(dni)) { est.textContent = ''; return; }
+            if (dniCache[dni]) {
+                nom.value = dniCache[dni];
+                est.className = 'text-[10px] text-emerald-600 font-semibold mt-0.5 min-h-[14px]';
+                est.textContent = '✓ Visitante conocido';
+            } else {
+                est.className = 'text-[10px] text-gray-500 mt-0.5 min-h-[14px]';
+                est.textContent = 'DNI nuevo: escribe el nombre';
+            }
+        }
+
         // REGISTRAR VISITAS Y PROVEEDORES EN RECEPCIÓN
         function registrarVisitaRecepcion(e) {
             e.preventDefault();
@@ -754,6 +776,8 @@
             const dpto = document.getElementById('visDpto').value.trim();
 
             agregarRegistro('Recepción', tipo, `${nombre} ${dni ? '(DNI: ' + dni + ')' : ''}`, dpto);
+            if (/^\d{8}$/.test(dni) && nombre) { dniCache[dni] = nombre; guardarDniCache(); }
+            document.getElementById('dniEstado').textContent = '';
             document.getElementById('visDni').value = '';
             document.getElementById('visNombre').value = '';
             document.getElementById('visDpto').value = '';
